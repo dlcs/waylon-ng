@@ -1,0 +1,6 @@
+#!/bin/sh
+
+cd /opt/deployed/waylon
+echo "Starting UWSGI for waylon_proxy.py" >> /dev/stdout
+
+uwsgi --plugins http,python3 --http 0.0.0.0:80 --master --module wsgi --processes 1

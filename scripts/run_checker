@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cd /opt/deployed
+echo "Starting deliverator_iris_adapter_checker.py" >> /dev/stdout
+python3 -u /opt/deployed/waylon/deliverator_iris_adapter_checker.py >> /dev/stdout

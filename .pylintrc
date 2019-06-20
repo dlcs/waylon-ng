@@ -1,0 +1,14 @@
+[MESSAGES CONTROL]
+disable=
+    missing-docstring,
+    too-few-public-methods,
+    broad-except,
+    logging-fstring-interpolation
+
+max-args=
+    10
+
+[BASIC]
+good-names=
+    id
+
