@@ -28,7 +28,7 @@ def main():
 
 def process_message(message, parser, s3_client, iris):
 
-    logging.debug("Processing message")
+    logger.debug("Processing message")
     filename = None
     try:
 
@@ -49,7 +49,7 @@ def process_message(message, parser, s3_client, iris):
         if filename:
             os.remove(filename)
 
-    logging.debug("Message processed")
+    logger.debug("Message processed")
 
 
 def process_work(work, bucket, key, session, iris):
@@ -68,7 +68,7 @@ def process_work(work, bucket, key, session, iris):
 
 
 def remove_existing_images(work):
-    logger.debug(f"remove_exiting_images(work={work.id})")
+    logger.debug(f"remove_existing_images(work={work.id})")
 
 
     manifest_url = settings.DLCS_PATH + 'raw-resource/' \
@@ -96,7 +96,8 @@ def remove_existing_images(work):
         '/deleteImages', data=collection_json, auth=authorisation
     )
     if not delete_response.status_code == 200:
-        raise RuntimeError(f"Could not remove existing images, status code: {response.status_code}")
+        logger.debug(f"not 200 OK. response was: {delete_response.text}")
+        raise RuntimeError(f"Could not remove existing images, status code: {delete_response.status_code}")
     logger.debug(f"... finished removal")
 
 
