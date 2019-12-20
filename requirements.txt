@@ -7,3 +7,4 @@ boto3
 unicodecsv
 flask
 -e git+https://github.com/digirati-co-uk/iris4py.git#egg=iris-core-0
+# -e git+https://github.com/dlcs/dlcs-client.git#egg=dlcs
