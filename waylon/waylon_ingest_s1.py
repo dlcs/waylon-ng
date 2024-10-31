@@ -91,7 +91,7 @@ def remove_existing_images(work):
             settings.DLCS_ENTRY + 'customers/' + str(settings.DLCS_CUSTOMER_ID) +
             '/deleteImages', data=collection_json, auth=authorisation
         )
-        if not delete_response.status_code == 200:  # <<<< does the delete now give a 200?
+        if not delete_response.status_code == 200:
             logging.debug(f"not 200 OK. response was: {delete_response.text}")
             raise RuntimeError(f"Could not remove existing images, status code: {delete_response.status_code}")
         logging.debug(f"... finished removal")
