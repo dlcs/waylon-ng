@@ -11,6 +11,11 @@ from iris.iris_client import IrisClient, IrisListener
 import settings
 from waylon import aws_ops, util
 
+JSON_HEADERS = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+}
+
 
 def main():
 
@@ -71,7 +76,7 @@ def remove_existing_images(work):
     logging.debug(f"remove_existing_images(work={work.id})")
 
 
-    manifest_url = settings.DLCS_PATH + 'iiif-resource/' \
+    manifest_url = settings.DLCS_PATH + 'raw-resource/' \
         + str(settings.DLCS_CUSTOMER_ID) + '/waylon/' + work.id + '/0'
     logging.debug(f"... get manifest from {manifest_url}")
     response = get(manifest_url)
@@ -89,7 +94,7 @@ def remove_existing_images(work):
         logging.debug(f"... removing images based on that collection")
         delete_response = post(
             settings.DLCS_ENTRY + 'customers/' + str(settings.DLCS_CUSTOMER_ID) +
-            '/deleteImages', data=collection_json, auth=authorisation
+            '/deleteImages', data=collection_json, auth=authorisation, headers=JSON_HEADERS
         )
         if not delete_response.status_code == 200:
             logging.debug(f"not 200 OK. response was: {delete_response.text}")
