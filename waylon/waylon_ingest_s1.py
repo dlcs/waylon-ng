@@ -9,6 +9,7 @@ import dlcs
 import dlcs.image_collection
 from iris.iris_client import IrisClient, IrisListener
 import settings
+import uuid
 from waylon import aws_ops, util
 
 JSON_HEADERS = {
@@ -77,7 +78,7 @@ def remove_existing_images(work):
 
 
     manifest_url = settings.DLCS_PATH + 'raw-resource/' \
-        + str(settings.DLCS_CUSTOMER_ID) + '/waylon/' + work.id + '/0'
+        + str(settings.DLCS_CUSTOMER_ID) + '/waylon/' + work.id + '/0?bust=' + str(uuid.uuid4())
     logging.debug(f"... get manifest from {manifest_url}")
     response = get(manifest_url)
     if response.status_code == 200:
