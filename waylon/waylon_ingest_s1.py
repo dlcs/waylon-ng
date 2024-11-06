@@ -9,7 +9,13 @@ import dlcs
 import dlcs.image_collection
 from iris.iris_client import IrisClient, IrisListener
 import settings
+import uuid
 from waylon import aws_ops, util
+
+JSON_HEADERS = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+}
 
 
 def main():
@@ -72,33 +78,34 @@ def remove_existing_images(work):
 
 
     manifest_url = settings.DLCS_PATH + 'raw-resource/' \
-        + str(settings.DLCS_CUSTOMER_ID) + '/waylon/' + work.id + '/0'
+        + str(settings.DLCS_CUSTOMER_ID) + '/waylon/' + work.id + '/0?bust=' + str(uuid.uuid4())
     logging.debug(f"... get manifest from {manifest_url}")
     response = get(manifest_url)
-
-    if not response.status_code == 200:
-        raise RuntimeError(f"Could not get manifest to remove existing images, "
+    if response.status_code == 200:
+        result_string = response.text
+        logging.debug(f"... parsing json from manifest")
+        result = json.loads(result_string, object_pairs_hook=OrderedDict)
+        images = []
+        for image_id in result:
+            logging.debug(f"... adding {image_id} to collection")
+            images.append(dlcs.image_collection.Image(id=str(image_id)))
+        image_collection = dlcs.image_collection.ImageCollection(images)
+        collection_json = json.dumps(image_collection.to_json_dict())
+        authorisation = auth.HTTPBasicAuth(settings.DLCS_API_KEY, settings.DLCS_API_SECRET)
+        logging.debug(f"... removing images based on that collection")
+        delete_response = post(
+            settings.DLCS_ENTRY + 'customers/' + str(settings.DLCS_CUSTOMER_ID) +
+            '/deleteImages', data=collection_json, auth=authorisation, headers=JSON_HEADERS
+        )
+        if not delete_response.status_code == 200:
+            logging.debug(f"not 200 OK. response was: {delete_response.text}")
+            raise RuntimeError(f"Could not remove existing images, status code: {delete_response.status_code}")
+        logging.debug(f"... finished removal")
+    elif response.status_code == 404:
+        logging.debug(f"... manifest does not exist")
+    else:
+        raise RuntimeError(f"Error tyring to remove existing images, "
                            f"status code: {response.status_code}")
-
-    result_string = response.text
-    logging.debug(f"... parsing json from manifest")
-    result = json.loads(result_string, object_pairs_hook=OrderedDict)
-    images = []
-    for image_id in result:
-        logging.debug(f"... adding {image_id} to collection")
-        images.append(dlcs.image_collection.Image(id=str(image_id)))
-    image_collection = dlcs.image_collection.ImageCollection(images)
-    collection_json = json.dumps(image_collection.to_json_dict())
-    authorisation = auth.HTTPBasicAuth(settings.DLCS_API_KEY, settings.DLCS_API_SECRET)
-    logging.debug(f"... removing images based on that collection")
-    delete_response = post(
-        settings.DLCS_ENTRY + 'customers/' + str(settings.DLCS_CUSTOMER_ID) +
-        '/deleteImages', data=collection_json, auth=authorisation
-    )
-    if not delete_response.status_code == 200:
-        logging.debug(f"not 200 OK. response was: {delete_response.text}")
-        raise RuntimeError(f"Could not remove existing images, status code: {delete_response.status_code}")
-    logging.debug(f"... finished removal")
 
 
 def register_work_imagecollection(work):

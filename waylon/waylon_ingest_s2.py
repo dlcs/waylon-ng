@@ -90,6 +90,7 @@ def get_manifest(work):
         raise IOError("Could not get manifest to remove existing images")
     result_string = response.text
     manifest = json.loads(result_string, object_pairs_hook=OrderedDict)
+    manifest.pop('label', None)
     return manifest
 
 
